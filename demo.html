@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8" />
+
+<title>Recent Instagram Uploads</title>
+
+</head>
+
+<body>
+
+<h1>Recent Instagram Uploads</h1>
+
+<ul id="instagram">
+    <li class="loading">
+        <a href="http://instagram.com/jlengstorf">
+            View my photos on Instagram.
+        </a>
+    </li>
+</ul><!--/#instagram-->
+
+<h2>Script
+
+<pre>
+
+</pre>
+
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="./scripts/jquery.read-instagram.js"></script>
+<script>
+
+jQuery(function($){
+
+    $('#instagram').recentInstagramUploads({
+        access_token: '30794906.d5a97e1.3e9853aa7d6445bd81aea81c7b825b52',
+        ig_username:  'jlengstorf'
+    });
+
+});
+
+</script>
+
+</body>
+
+</html>
