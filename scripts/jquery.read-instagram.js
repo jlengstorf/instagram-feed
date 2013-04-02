@@ -39,7 +39,6 @@
             loading_selector: '.loading',
             photo_count: 12,
             photo_class: 'photo',
-            photo_rel: 'instagram',
             callback: function(){  }
         };
 
