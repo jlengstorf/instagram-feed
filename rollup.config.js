@@ -27,6 +27,8 @@ export default {
       ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
       IG_CLIENT_ID: JSON.stringify(process.env.IG_CLIENT_ID),
       IG_REDIRECT_URI: JSON.stringify(process.env.IG_REDIRECT_URI),
+      IG_API_SELF_MEDIA_RECENT: JSON.stringify(process.env.IG_API_SELF_MEDIA_RECENT),
+      IG_API_OAUTH: JSON.stringify(process.env.IG_API_OAUTH),
     }),
     (process.env.NODE_ENV === 'production' && uglify()),
   ],
