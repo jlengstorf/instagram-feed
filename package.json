@@ -1,0 +1,50 @@
+{
+  "name": "instagram-feed",
+  "version": "2.0.0",
+  "description": "Functional JS app to display a user’s Instagram feed.",
+  "main": "server.js",
+  "scripts": {
+    "dev": "run-p dev:*",
+    "dev:watch": "rollup -c --watch",
+    "dev:serve": "http-server dist/",
+    "test": "run-s test:* --silent",
+    "test:style": "jscs src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jlengstorf/instagram-feed.git"
+  },
+  "keywords": [
+    "instagram",
+    "feed",
+    "ramda",
+    "functional"
+  ],
+  "author": "Jason Lengstorf <jason@lengstorf.com> (@jlengstorf)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jlengstorf/instagram-feed/issues"
+  },
+  "homepage": "https://github.com/jlengstorf/instagram-feed#readme",
+  "devDependencies": {
+    "babel-plugin-external-helpers": "^6.8.0",
+    "babel-preset-es2015": "^6.14.0",
+    "jscs": "^3.0.7",
+    "npm-run-all": "^3.1.0",
+    "rollup": "^0.36.3",
+    "rollup-plugin-babel": "^2.6.1",
+    "rollup-plugin-commonjs": "^5.0.4",
+    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-replace": "^1.1.1",
+    "rollup-plugin-uglify": "^1.0.1",
+    "rollup-watch": "^2.5.0"
+  },
+  "dependencies": {
+    "bemmit": "^1.0.0",
+    "debug": "^2.2.0",
+    "dotenv": "^2.0.0",
+    "fetch-jsonp": "^1.0.2",
+    "ramda": "^0.22.1",
+    "whatwg-fetch": "^1.0.0"
+  }
+}
