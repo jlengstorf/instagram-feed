@@ -1,38 +1,49 @@
-Instagram Feed Reader
-=====================
+# Instagram Feed Reader
 
-A jQuery plugin to load a given user's latest Instagram photos. Can accept a 
-username or user ID.
+This app is a practical application of functional programming using [Ramda](http://ramdajs.com/). It's part of a [video tutorial](https://code.lengstorf.com/learn-functional-programming-ramda/).
 
+## Installation
 
-Usage
------
+### 1. Clone the repo.
 
-Coming soon.
+``` sh
+# Clone the repo
+git clone https://github.com/jlengstorf/instagram-feed.git
 
+# Move into the cloned repo
+cd instagram-feed/
 
-Authors
--------
+# Install dependencies
+npm install
+```
 
-**Jason Lengstorf**
+### 2. Create an Instagram client.
 
-* https://twitter.com/jlengstorf
-* https://github.com/jlengstorf
+Create an [Instagram client](https://www.instagram.com/developer/clients/manage/) and copy the Client ID.
 
+Make sure to set the "Valid redirect URIs" in the "Security" tab. (For development, this is `http://127.0.0.1:8080/`.)
 
-Copyright and license
----------------------
+### 3. Set environment variables.
 
-Copyright (c) 2012 Jason Lengstorf
+``` sh
+# Create a `.env` file
+cp .env.EXAMPLE .env
+```
 
-Licensed under the MIT License (the "License"); you may not use this work 
-except in compliance with the License. You may obtain a copy of the License in 
-the license.txt file, or at:
+Edit `.env` and set the `IG_CLIENT_ID` and `IG_REDIRECT_URI` variables with your own Client ID and redirect URI.
 
-http://opensource.org/licenses/mit-license.php
+### 4. Start the app.
 
-Unless required by applicable law or agreed to in writing, software 
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
-License for the specific language governing permissions and limitations under 
-the License.
+``` sh
+# Start the app in development mode
+npm run dev
+```
+
+Once the app is running, you can open it at [127.0.0.1:8080](http://127.0.0.1:8080/) and authorize your Instagram account.
+
+## Production Build
+
+``` sh
+# Run the production build script
+npm run build
+```
