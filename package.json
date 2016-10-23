@@ -4,6 +4,9 @@
   "description": "Functional JS app to display a user’s Instagram feed.",
   "main": "server.js",
   "scripts": {
+    "prebuild": "del dist",
+    "build": "run-s html:copy build:*",
+    "build:js": "NODE_ENV=production rollup -c",
     "predev": "del dist && npm run html:copy",
     "dev": "run-p dev:* --silent",
     "dev:html": "watch -c 'run-s html:clean html:copy' -p 'src/*.html'",

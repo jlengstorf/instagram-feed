@@ -11,7 +11,7 @@ export default {
   entry: 'src/scripts/main.js',
   dest: 'dist/js/instagram-feed.min.js',
   format: 'iife',
-  sourceMap: 'inline',
+  sourceMap: true,
   plugins: [
     commonjs(),
     resolve({
