@@ -32,8 +32,42 @@ const log = debug('instagram-feed-reader');
 
 log('Debugging is enabled!');
 
+/**
+ * For debugging only, this logs, then returns the argument untouched.
+ * @param  {Mixed} arg  the argument to be logged
+ * @return {Mixed}      the argument, unchanged
+ */
+const logAndReturn = arg => { log(arg); return arg; };
+
 // Alias this long-ass function name for brevity.
 const esc = encodeURIComponent;
+
+/**
+ * To make it obvious when a function has side-effects, keep them in an object.
+ * @type {Object}
+ */
+const unsafe = {
+
+  /**
+   * Sets the `innerHTML` element of a given element with the given string.
+   * @param  {String} selector  the element selector
+   * @param  {String} htmlStr   the string to insert into the target element
+   * @return {Void}
+   */
+  renderStringToDOM: (selector, htmlStr) => {
+    document.querySelector(selector).innerHTML = htmlStr;
+  },
+
+  /**
+   * Executes a JSONP request, then returns a Promise with the response JSON.
+   * @param  {String} endpoint  the API endpoint URI to make the request
+   * @return {Promise}          a promise containing the response as JSON
+   */
+  fetchMediaAsJSON: endpoint => {
+    return fetchJSONP(endpoint)
+      .then(response => response.json());
+  },
+};
 
 /**
  * Creates an endpoint URI, complete with query string arguments.
@@ -103,21 +137,6 @@ const getQueryStringWithToken = compose(getQueryString, addTokenToArgs);
 const buildRequestURI = compose(getEndpoint, getQueryStringWithToken);
 
 /**
- * Executes a JSONP request, then returns a Promise with the response JSON.
- * @param  {String} endpoint  the API endpoint URI to make the request
- * @return {Promise}          a promise containing the response as JSON
- */
-const fetchMediaAsJSON = endpoint => fetchJSONP(endpoint)
-  .then(response => response.json());
-
-/**
- * Combines the query builder and the API request into one function.
- * @param  {Object} args  the args for the request
- * @return {Promise}      a Promise containing the response as JSON
- */
-const getRecentMedia = compose(fetchMediaAsJSON, buildRequestURI);
-
-/**
  * Retrieves just the photo data from the request.
  * @param  {Object} response  the API response object
  * @return {Array}            the images array
@@ -182,87 +201,74 @@ const createElement = partialRight(invoker(1, 'createElement'), [document]);
  */
 const getElementById = partialRight(invoker(1, 'getElementById'), [document]);
 
-/*
-
-// This is a more functional way to create images, but I got hung up on how to
-// combine these with other elements and ultimately append them to the DOM.
-const setAttr = curryN(2, (image, attr) => assoc(attr, image[attr]));
-const createAttrSetters = flip(map);
-const pipeToList = args => pipe(...args);
-
-const imgAttrs = ['alt', 'src', 'className'];
-const createImgAttrSetters = createAttrSetters(imgAttrs);
-const createImageWithAttrs = flip(call)(createElement('img'));
-const imagePipeline = pipe(
-  setAttr,
-  createImgAttrSetters,
-  pipeToList,
-  createImageWithAttrs
-);
-*/
-
 /**
- * Creates DOM elements for image display and appends them to the app element.
- *
- * Okay, let’s be honest here: this function is kind of a shitshow. It has a
- * ton of side effects, way too many moving parts, and even some hard-coded
- * values. However, DOM manipulation with functional programming is tricky,
- * and I’m a hobbyist at best with FP. So to all the expert functional
- * programmers whose heads just exploded: I’m very sorry.
- *
+ * Creates image markup as a string.
  * @param  {Object} image  the image data
- * @return {Void}
+ * @return {String}        markup to display the image
  */
 const createImage = image => {
 
   // Bemmit makes BEM class names less unwieldy.
   const getClass = bemmit('instagram-feed');
 
-  const img = createElement('img');
-  img.classList.add(getClass('image'));
-  img.src = image.src;
-  img.alt = `Photo by ${image.user}`;
+  // Get class names ahead of time to keep things cleaner.
+  const figureClass = getClass();
+  const linkClass = getClass('link');
+  const imageClass = getClass('image');
+  const captionClass = getClass('caption');
 
-  // Clicking the image will take the user to this photo on Instagram.
-  const link = createElement('a');
-  link.classList.add(getClass('link'));
-  link.href = image.link;
-  link.title = 'View on Instagram';
-
-  // Place the `<img>` tag inside the link.
-  link.appendChild(img);
-
-  // Captions for context.
-  const caption = createElement('figcaption');
-  caption.classList.add(getClass('caption'));
-  caption.textContent = image.caption;
-
-  // The whole shebang gets wrapped in a `<figure>` element.
-  const figure = createElement('figure');
-  figure.classList.add(getClass());
-
-  // Pop the linked image and the caption inside.
-  figure.appendChild(link);
-  figure.appendChild(caption);
-
-  // Get the app’s root element. This line feels like shitty code.
-  const app = getElementById('app');
-
-  // Append the new figure to the app’s root element.
-  app.appendChild(figure);
+  return `
+    <figure class="${figureClass}">
+      <a href="${image.link}" class="${linkClass}">
+        <img src="${image.src}" alt="Photo by ${image.user}"
+             class="${imageClass}" />
+      </a>
+      <figcaption class="${captionClass}">${image.caption}</figcaption>
+    </figure>
+  `;
 };
 
 /**
- * Loops through each image from Instagram and outputs HTML to display it.
- *
- * Since this function is all side effects (DOM manipulation), we use `forEach`
- * instead of `map`. This is a nitpicky distinction, but it’s helpful for
- * quickly identifying that this isn’t a pure function.
- *
- * @param  {Array} images  the images to display
+ * Generates an array of markup strings from an array of image data objects.
+ * @param  {Array} images  an array of image data objects
+ * @return {Array}         an array of image markup strings
+ */
+const getImageMarkupArray = map(createImage);
+
+/**
+ * Reduces the array of image markup strings into a single string of HTML.
+ * @param  {Array} images  an array of image markup strings
+ * @return {String}        a string of HTML markup
+ */
+const combineImageMarkup = reduce(concat, '');
+
+/**
+ * Accepts an array of image data objects and returns HTML to display them.
+ * @param  {Array} images  an array of image data objects
+ * @return {String}        a string of HTML markup
+ */
+const generateMarkup = compose(combineImageMarkup, getImageMarkupArray);
+
+const buildLoginLink = args => {
+
+  // Reuse the `getQueryString()` function.
+  const queryString = getQueryString(args);
+  const loginLink = `${IG_API_OAUTH}?${queryString}`;
+
+  // Now we build the DOM element and add it to the app’s root element.
+  const getClass = bemmit('instagram-feed');
+  const loginClass = getClass('auth');
+  return `
+    <a href="${loginLink}" class="${loginClass}">Authorize Instagram</a>
+  `;
+};
+
+/**
+ * Sets the `innerHTML` of the `#app` element.
+ * @param  {String} htmlString  the markup to display in the app
  * @return {Void}
  */
-const displayImages = forEach(createImage);
+const render = htmlString => unsafe.renderStringToDOM('#app', htmlString);
 
 /**
  * Runs the whole program to load, process, and display Instagram images.
@@ -270,9 +276,15 @@ const displayImages = forEach(createImage);
  * @return {Void}
  */
 const showPhotos = args => {
-  getRecentMedia(args)
-    .then(handlePhotos)
-    .then(displayImages);
+  const endpoint = buildRequestURI(args);
+
+  unsafe.fetchMediaAsJSON(endpoint) // 1.  Send the request to Instagram
+    .then(logAndReturn)             // 1a. Log the response
+    .then(handlePhotos)             // 2.  Create an array of image objects
+    .then(logAndReturn)             // 2a. Log the array of image objects
+    .then(generateMarkup)           // 3.  Generate markup from the array
+    .then(logAndReturn)             // 3a. Log the generated markup
+    .then(render);                  // 4.  Render the image markup
 };
 
 /**
@@ -291,19 +303,7 @@ const showLogin = () => {
     response_type: 'token',
   };
 
-  // Reuse the `getQueryString()` function.
-  const queryString = getQueryString(args);
-  const loginLink = `${IG_API_OAUTH}?${queryString}`;
-
-  // Now we build the DOM element and add it to the app’s root element.
-  const getClass = bemmit('instagram-feed');
-  const login = createElement('a');
-  login.classList.add(getClass('auth'));
-  login.textContent = 'Authorize Instagram';
-  login.href = loginLink;
-
-  const app = getElementById('app');
-  app.appendChild(login);
+  render(buildLoginLink(args));
 };
 
 /**
