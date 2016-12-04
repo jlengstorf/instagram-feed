@@ -75,6 +75,7 @@ const createImage = image => {
     </figure>
   `;
 };
+
 const getImageMarkupArray = map(createImage);
 const combineImageMarkup = reduce(concat, '');
 const generateMarkup = compose(combineImageMarkup, getImageMarkupArray);
