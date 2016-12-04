@@ -84,8 +84,6 @@ const buildLoginLink = args => {
   const queryString = getQueryString(args);
   const loginLink = `${IG_API_OAUTH}?${queryString}`;
 
-  log(`loginLink: ${loginLink}`);
-
   const getClass = bemmit('instagram-feed');
   const loginClass = getClass('auth');
 
