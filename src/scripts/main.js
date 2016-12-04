@@ -7,6 +7,6 @@ const log = debug('app:main');
 log('Starting the app...');
 
 // Start the app.
-loadRecentInstagramPosts();
+loadRecentInstagramPosts({ count: 12 });
 
 log('App started.');
