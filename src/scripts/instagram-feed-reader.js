@@ -5,12 +5,17 @@ import fetchJSONP from 'fetch-jsonp';
 import bemmit from 'bemmit';
 
 // Only import the functions we need from Ramda.
+import applySpec from 'ramda/src/applySpec';
 import assoc from 'ramda/src/assoc';
 import compose from 'ramda/src/compose';
 import concat from 'ramda/src/concat';
 import curry from 'ramda/src/curry';
 import join from 'ramda/src/join';
+import map from 'ramda/src/map';
 import mapObjIndexed from 'ramda/src/mapObjIndexed';
+import path from 'ramda/src/path';
+import prop from 'ramda/src/prop';
+import reduce from 'ramda/src/reduce';
 import replace from 'ramda/src/replace';
 import tap from 'ramda/src/tap';
 import test from 'ramda/src/test';
@@ -56,7 +61,12 @@ const unsafe = {
   fetchMediaAsJSON: endpoint => {
     return fetchJSONP(endpoint)
       .then(data => data.json())
-      .then(logAndReturn);
+      .then(logAndReturn)
+      .then(handlePhotos)
+      .then(logAndReturn)
+      .then(generateMarkup)
+      .then(logAndReturn)
+      .then(render);
   },
 };
 
@@ -79,6 +89,39 @@ const addTokenToArgs = assoc('access_token');
 const getQueryStringWithToken = compose(getQueryString, addTokenToArgs);
 const getRecentMediaEndpoint = concat(`${IG_API_SELF_MEDIA_RECENT}?`);
 const buildRequestURI = compose(getRecentMediaEndpoint, getQueryStringWithToken);
+
+const getPhotos = prop('data');
+const extractImageData = applySpec({
+  src: path(['images', 'low_resolution', 'url']),
+  caption: path(['caption', 'text']),
+  link: prop('link'),
+  user: path(['user', 'username']),
+});
+const handlePhotos = compose(map(extractImageData), getPhotos);
+const createImage = image => {
+
+  // Bemmit makes BEM class names less unwieldy.
+  const getClass = bemmit('instagram-feed');
+
+  // Get class names ahead of time to keep things cleaner.
+  const figureClass = getClass();
+  const linkClass = getClass('link');
+  const imageClass = getClass('image');
+  const captionClass = getClass('caption');
+
+  return `
+    <figure class="${figureClass}">
+      <a href="${image.link}" class="${linkClass}">
+        <img src="${image.src}" alt="Photo by ${image.user}"
+             class="${imageClass}" />
+      </a>
+      <figcaption class="${captionClass}">${image.caption}</figcaption>
+    </figure>
+  `;
+};
+const getImageMarkupArray = map(createImage);
+const combineImageMarkup = reduce(concat, '');
+const generateMarkup = compose(combineImageMarkup, getImageMarkupArray);
 
 const showPhotos = (args = { count: 16 }) => {
   const token = getToken(document.location.hash);
