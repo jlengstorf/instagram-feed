@@ -1,4 +1,3 @@
-// Import the Instagram feed reader.
 import loadRecentInstagramPosts from './instagram-feed-reader';
 
 // Create a debugger.
