@@ -1,4 +1,5 @@
 {
     "preset": "airbnb",
-    "fileExtensions": [".js", "jscs"]
+    "fileExtensions": [".js", "jscs"],
+    "requireShorthandArrowFunctions": false
 }
